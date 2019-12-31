@@ -3,6 +3,11 @@
 const User = use('App/Models/User')
 
 class UserController {
+  async index () {
+    const users = User.all()
+    return users
+  }
+
   async create ({ request }) {
     const data = request.only(['username', 'email', 'password'])
 
