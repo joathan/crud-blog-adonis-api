@@ -1,5 +1,7 @@
 'use strict'
 
+const Article = use('App/Models/Article')
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -17,7 +19,9 @@ class ArticleController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index () {
+    const articles = Article.all()
+    return articles
   }
 
   /**
@@ -30,6 +34,7 @@ class ArticleController {
    * @param {View} ctx.view
    */
   async create ({ request, response, view }) {
+
   }
 
   /**
@@ -40,7 +45,16 @@ class ArticleController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ auth, request, response }) {
+    const { id } = auth.user
+    const data = request.only([
+      'title',
+      'body'
+    ])
+
+    const article = await Article.create({ ...data, user_id: id })
+
+    return article
   }
 
   /**
@@ -53,6 +67,9 @@ class ArticleController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
+    const article = await Article.findOrFail(params.id)
+
+    return article
   }
 
   /**
@@ -65,6 +82,7 @@ class ArticleController {
    * @param {View} ctx.view
    */
   async edit ({ params, request, response, view }) {
+
   }
 
   /**
@@ -76,6 +94,18 @@ class ArticleController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    const article = await Article.findOrFail(params.id)
+
+    const data = request.only([
+      'title',
+      'body'
+    ])
+
+    article.merge(data)
+
+    await article.save()
+
+    return article
   }
 
   /**
@@ -86,7 +116,14 @@ class ArticleController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy ({ params, auth, request, response }) {
+    const article = await Article.findOrFail(params.id)
+
+    if (article.user_id !== auth.user.id) {
+      return response.status(401).send({ error: 'Not authorized' })
+    }
+
+    await article.delete()
   }
 }
 

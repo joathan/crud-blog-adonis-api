@@ -17,7 +17,9 @@
 const Route = use('Route')
 
 Route.post('/users', 'UserController.create')
+Route.get('/users', 'UserController.index')
+
 Route.post('/sessions', 'SessionController.create')
-// Route.get('/', () => {
-//   return { greeting: 'Hello world in JSON' }
-// })
+
+Route.resource('articles', 'ArticleController').apiOnly().middleware('auth')
+Route.resource('autors', 'AutorController').apiOnly().middleware('auth')
